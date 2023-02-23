@@ -29,7 +29,6 @@ Develop a To-do list and/or Shopping list for us. It should consist of a loss ba
 
 ### How to run:
 
-# INSTALLATION
 1. Bring up your terminal
 2. Clone the project locally by running this command "git clone https://github.com/chicodes/beeproger-todo-frontend.git"
 3. CD into the directory where the project was cloned.
