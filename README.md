@@ -40,7 +40,7 @@ Develop a To-do list and/or Shopping list for us. It should consist of a loss ba
 
 
 
-### What I would have done if I had more time
+### What I would have done better if I had more time
 
 1. I would have written  writen unit test and achieved a test coverage of at least 90%.
 2. I would have containerized the app
