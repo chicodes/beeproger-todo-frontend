@@ -48,7 +48,7 @@ Develop a To-do list and/or Shopping list for us. It should consist of a loss ba
 
 This frontend is also accessible remotely through the link below:
 
-https://todos-codes.netlify.app/
+https://todo-codes.netlify.app/
 
 
 backend code base can be found in the github repo below:
