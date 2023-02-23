@@ -21,20 +21,21 @@ Develop a To-do list and/or Shopping list for us. It should consist of a loss ba
 
 ### Language :
 
-	PHP 8.2
+	Javascript
 
 ### Framework:
 
-	Laravel 8.8
+	React 18.2.0
 
 ### How to run:
 
 # INSTALLATION
-The app runs on react version 18.2.0 and it can be installed with few steps;
-1. Clone the project from the repository.
-2. Create an env file in the root of the project and include the base Url with a key 'BASE_URL'.
-3. Run "npm install" to install the project dependencies.
-4. Run "npm start" and the project is live on localhost:3000
+1. Bring up your terminal
+2. Clone the project locally by running this command "git clone https://github.com/chicodes/beeproger-todo-frontend.git"
+3. CD into the directory where the project was cloned.
+4. Create an env file in the root of the project and include the base Url with a key 'BASE_URL'.
+5. Run "npm install" to install the project dependencies.
+5. Run "npm start" and the project is live on localhost:3000
 
 
 
@@ -46,7 +47,7 @@ The app runs on react version 18.2.0 and it can be installed with few steps;
 
 ### PS:
 
-This frontend is also accessible remotely through th link below:
+This frontend is also accessible remotely through the link below:
 
 https://todos-codes.netlify.app/
 
