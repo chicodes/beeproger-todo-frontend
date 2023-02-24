@@ -32,7 +32,7 @@ Develop a To-do list and/or Shopping list for us. It should consist of a loss ba
 1. Bring up your terminal
 2. Clone the project locally by running this command "git clone https://github.com/chicodes/beeproger-todo-frontend.git"
 3. CD into the directory where the project was cloned.
-4. Create an env file in the root of the project and include the base Url with a key 'BASE_URL'.
+4. Create an env file in the root of the project and include the base Url with a key 'REACT_APP_BASE_URL'.
 5. Run "npm install" to install the project dependencies.
 5. Run "npm start" and the project is live on localhost:3000
 
