@@ -3,6 +3,8 @@ import {
   Routes,
   Route,
 } from 'react-router-dom';
+import Home from './pages/Home'
+import Details from './pages/Details'
 import '../src/css/App.css';
 import '../src/css/index.css';
 import '../src/css/animate.css'
@@ -12,8 +14,6 @@ import '../src/css/plugin.css'
 import '../src/css/styles.css'
 import '../src/css/font-awesome.min.css'
 import 'react-toastify/dist/ReactToastify.css';
-import Home from './pages/Home'
-import Details from './pages/Details'
 
 
 function App() {
