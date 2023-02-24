@@ -21,9 +21,9 @@ function App() {
     <div className="App">
       <Router>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/todo/:todoid" element={<Details />} />
-          <Route path="*" element={<div className="p-24">
+          <Route key={0} path="/" element={<Home />} />
+          <Route key={1} path="/todo/:todoid" element={<Details />} />
+          <Route key={2} path="*" element={<div className="p-24">
             <h1 className="text-center text-3xl">Error 404</h1>
             <p className="p-5 text-center text-base">Page not found</p>
           </div>}></Route>

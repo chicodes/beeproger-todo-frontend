@@ -13,12 +13,13 @@ export default function Details() {
     let [preloader, setPreloader] = useState(false)
     useEffect(() => {
         fetchTodo()
-    })
+        // eslint-disable-next-line
+    }, [])
 
     async function fetchTodo() {
         try {
             setPreloader(true)
-            let response = await axios.get(`https://todo-test.herokuapp.com/todo/v1/${params.todoid}`)
+            let response = await axios.get(`${process.env.REACT_APP_BASE_URL}/${params.todoid}`)
             let fetchedData = response?.data?.data
             updateTodo(fetchedData)
             setPreloader(false)
@@ -46,8 +47,8 @@ export default function Details() {
                             <div className="col-lg-8">
 
                                 {
-                                    !preloader && <Suspense fallback={<Spinner/>} >
-                                        <DetailsTile todo={todo} />
+                                    preloader ? <Spinner /> : <Suspense>
+                                        {todo?.id ? <DetailsTile todo={todo} /> : <h1 className='p-5'>Could not get todo details</h1>}
                                     </Suspense>
                                 }
 

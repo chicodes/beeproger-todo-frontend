@@ -1,8 +1,8 @@
 import React from 'react';
 import Pagination from 'react-bootstrap/Pagination';
-export default function Paginator({ changePage }) {
+export default function Paginator({ changePage, pages }) {
     let items = [];
-    for (let number = 1; number <= 5; number++) {
+    for (let number = 1; number <= pages; number++) {
         items.push(
             <Pagination.Item onClick={(ev) => {
                 changePage(number)
@@ -16,7 +16,7 @@ export default function Paginator({ changePage }) {
         changePage(1)
     }} key={0} ><i className="fa fa-chevron-left"></i></Pagination.Item>)
     items.push(<Pagination.Item onClick={(ev) => {
-        changePage(5)
+        changePage(pages)
     }} key={items.length}><i className="fa fa-chevron-right"></i></Pagination.Item>)
     return (
         <div>

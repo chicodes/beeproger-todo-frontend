@@ -1,26 +1,30 @@
-import React from 'react';
-import { useState, useEffect, lazy, Suspense } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import axios from "axios";
 import Loader from "../components/Loader";
+import { ToastContainer, toast } from 'react-toastify';
 const Paginator = lazy(() => import('../components/Pagination'))
 const SideBar = lazy(() => import('../components/SideBar'))
 const TodoTile = lazy(() => import('../components/TodoTile'))
 
 export default function Home() {
-    let [todoList, updateArray] = useState([])
+    let [todoList, updateTodoList] = useState([])
     let [preloader, setPreloader] = useState(false)
-    
+    let [page, setPage] = useState(1)
+
     useEffect(() => {
         fetchTodo()
     }, [])
 
     async function fetchTodo(page = 1) {
+        console.log(process.env.REACT_APP_BASE_URL)
         try {
             setPreloader(true)
-            let response = await axios.get(`http://todo-test.herokuapp.com/todo/v1?page=${page}`)
+            let response = await axios.get(`${process.env.REACT_APP_BASE_URL}?page=${page}`)
             let fetchedData = response?.data.data.data
+            let reverse = fetchedData.reverse()
+            setPage(response?.data.data.last_page)
             // eslint-disable-next-line
-            updateArray(fetchedData?.map((item) => {
+            updateTodoList(reverse?.map((item) => {
                 if (item.status === 'PENDING') {
                     return { ...item, active: false, complete: false }
                 }
@@ -33,7 +37,26 @@ export default function Home() {
         catch (error) {
             console.log(error)
             setPreloader(false)
-            updateArray([])
+            updateTodoList([])
+        }
+    }
+
+    async function removeTask(task, i) {
+        updateTodoList(todoList.splice(i, 1))
+        if (task.image_link !== '') {
+            try {
+                let response = await axios.delete(`${process.env.REACT_APP_BASE_URL}/delete/${task.id}`)
+                console.log(response.data.status)
+                if (response.data.status === true) {
+                    notification('Todo deleted.')
+                }
+            }
+            catch (error) {
+                console.log(error)
+            }
+        }
+        else {
+            notification('Todo deleted.')
         }
     }
 
@@ -54,14 +77,27 @@ export default function Home() {
             end_date: today
         }
 
-        updateArray((prev) => [
-            ...prev,
-            temp
+        updateTodoList((prev) => [
+            temp,
+            ...prev
         ]);
     }
 
+    function notification(message) {
+        toast(message, {
+            position: "bottom-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+        });
+    }
+
     function updateName(item, e) {
-        updateArray(todoList?.map(list => {
+        updateTodoList(todoList?.map(list => {
             if (list.id === item) {
                 return { ...list, description: e };
             }
@@ -71,7 +107,7 @@ export default function Home() {
         }))
     }
     function attachImage(item, e) {
-        updateArray(todoList?.map(list => {
+        updateTodoList(todoList?.map(list => {
             if (list.id === item) {
                 return { ...list, photo: e };
             }
@@ -80,32 +116,73 @@ export default function Home() {
             }
         }))
     }
-    function uploadToCloud(todo) {
-        const today = new Date()
-        let tomorrow = new Date()
-        tomorrow.setDate(today.getDate() + 1)
+
+
+    async function uploadToCloud(todo) {
         let formData = new FormData()
+        let start = todo.start_date.split('T')[0]
+        let end = todo.end_date.split('T')[0]
         formData.append('todoPhoto', todo.photo)
         formData.append('description', todo.description)
         formData.append('status', todo.status)
-        formData.append('startDate', todo.start_date)
-        formData.append('endDate', todo.end_date)
-        if (!todo.created_at) {
-            let response = axios.post(`https://todo-test.herokuapp.com/todo/v1/addTodo`, formData)
-            if(response.status){
-                fetchTodo()
+        formData.append('startDate', start)
+        formData.append('endDate', end)
+        if (todo.created_at) {
+
+            if (todo.photo === undefined) {
+                try {
+                    let response = await axios.post(`${process.env.REACT_APP_BASE_URL}/updateTodo/${todo.id}`, formData)
+                    if (response.data.status) {
+                        notification('Todo updated.')
+                        // fetchTodo()
+                    }
+                }
+                catch (error) {
+                    console.log(error)
+                }
+            }
+            else {
+
+                if (todo.photo && todo.photo !== undefined) {
+                    try {
+                        let response = await axios.post(`${process.env.REACT_APP_BASE_URL}/updateTodo${todo.id}`, formData)
+                        if (response.data.status) {
+                            notification('Todo updated.')
+                            // fetchTodo()
+                        }
+                    }
+                    catch (error) {
+                        notification('Unable to update todo')
+                    }
+                }
+                else {
+                    notification('Please select a picture to save todo.')
+                }
+
             }
         }
         else {
-            let response = axios.post(`https://todo-test.herokuapp.com/todo/v1/updateTodo/${todo.id}`, formData)
-            if(response.status){
-                fetchTodo()
+            if (todo.photo) {
+                try {
+                    let response = await axios.post(`${process.env.REACT_APP_BASE_URL}/addTodo`, formData)
+
+                    if (response.data.status) {
+                        fetchTodo()
+                        notification('Todo added.')
+                    }
+                }
+                catch (error) {
+                    notification('Unable to add todo')
+                }
+            }
+            else {
+                notification('Please select a picture to save todo.')
             }
         }
     }
 
     function changeToActive(item) {
-        updateArray(todoList?.map(list => {
+        updateTodoList(todoList?.map(list => {
             if (list.id !== item) {
                 return { ...list, active: false, };
             } else {
@@ -115,21 +192,43 @@ export default function Home() {
     }
 
     function changeSpecific(item, e) {
-        let unique = item
-        updateArray(todoList?.map(list => {
-            if (list.id === unique && e) {
-                let response = axios.patch(`https://todo-test.herokuapp.com/todo/v1/status/${list.id}`, { status: 'COMPLETE' })
-                return { ...list, complete: e, status: 'COMPLETE' };
+        updateTodoList(todoList?.map(list => {
+            // eslint-disable-next-line
+            if (list.id === item) {
+                if (list.id === item && e === true) {
+                    try {
+                        let response = axios.patch(`${process.env.REACT_APP_BASE_URL}/status/${list.id}`, { status: 'COMPLETE' })
+                        if (response) {
+                            notification('Todo updated.')
+                        }
+                        return { ...list, complete: e, status: 'COMPLETE' };
+                    }
+                    catch (error) {
+                        notification('Unable to change status')
+                    }
+                }
+
+                else {
+                    try {
+                        let response = axios.patch(`${process.env.REACT_APP_BASE_URL}/status/${list.id}`, { status: 'PENDING' })
+                        if (response) {
+                            notification('Todo updated.')
+                        }
+                        return { ...list, complete: e, status: 'PENDING' }
+                    }
+                    catch {
+                        notification('Unable to change status')
+                    }
+                }
             }
             else {
-                let response = axios.patch(`https://todo-test.herokuapp.com/todo/v1/status/${list.id}`, { status: 'PENDING' })
-                return { ...list, complete: e, status: 'PENDING' };
+                return list
             }
         }));
     }
 
     function changeAllToActive(e) {
-        updateArray(todoList?.map(list => {
+        updateTodoList(todoList?.map(list => {
             if (list.complete === false && e.target.checked) {
                 return { ...list, complete: e.target.checked, };
             }
@@ -139,19 +238,13 @@ export default function Home() {
         }))
     }
 
-    function removeTask(item) {
-        let newAraray = [...todoList]
-        updateArray(newAraray?.filter(list => item !== list.id))
-        let response = axios.delete(`https://todo-test.herokuapp.com/todo/v1/delete/${item}`)
-        console.log(response)
-    }
 
     const todoArray = todoList?.map((item, i) => {
         return (
             <div onClick={() => {
                 changeToActive(item.id)
             }} >
-                <TodoTile changeSpecific={changeSpecific} removeTask={removeTask} attachImage={attachImage} todo={item} active={item.active} updateName={updateName} key={item.id} uploadToCloud={uploadToCloud} />
+                <TodoTile changeSpecific={changeSpecific} removeTask={() => { removeTask(item, i) }} attachImage={attachImage} todo={item} active={item.active} updateName={updateName} key={item.id} uploadToCloud={uploadToCloud} />
             </div>
         )
     })
@@ -180,8 +273,8 @@ export default function Home() {
                                                 <ul id="task-comment" className="list-group list-group-sp">
                                                     <div>
                                                         {
-                                                            !preloader && <Suspense fallback={<Loader />}>
-                                                                {todoArray}
+                                                            preloader ? <Loader /> : <Suspense>
+                                                                {todoArray.length > 0 ? todoArray : <h1 className='p-5'>No todos to display.</h1>}
                                                             </Suspense>
                                                         }
                                                     </div>
@@ -198,7 +291,7 @@ export default function Home() {
 
                                     {
                                         <Paginator /> && <Suspense>
-                                            <Paginator changePage={fetchTodo} />
+                                            <Paginator changePage={fetchTodo} pages={page} />
                                         </Suspense>
                                     }
                                 </div>
@@ -217,6 +310,17 @@ export default function Home() {
                 </section>
             </section>
 
+            <div className='hidden'>
+                <ToastContainer position="bottom-center"
+                    autoClose={5000}
+                    hideProgressBar
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    draggable
+                    pauseOnHover
+                    theme="dark" />
+            </div>
         </section>
 
 
